@@ -4,25 +4,43 @@
   "private": true,
   "homepage": "https://sites.google.com/caldia.org/matsdev/study/rn/100-getting-started",
   "scripts": {
-    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "start": "node node_modules/react-native/local-cli/cli.js start ./rn-cli.config.js",
     "test": "jest",
     "screenshot": "adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png && adb shell rm /sdcard/screen.png"
   },
   "repository": "github:matubokuri/react-native-android",
   "author": {
-    "name": "Koichi Matsuda", "email": "k-matsuda@caldia.org"
+    "name": "Koichi Matsuda",
+    "email": "k-matsuda@caldia.org"
   },
   "dependencies": {
     "react": "16.3.0-alpha.2",
     "react-native": "0.54.2"
   },
   "devDependencies": {
+    "@types/react": "^16.0.40",
+    "@types/react-native": "^0.52.19",
     "babel-jest": "23.0.0-alpha.0",
     "babel-preset-react-native": "4.0.0",
     "jest": "22.4.2",
-    "react-test-renderer": "16.3.0-alpha.2"
+    "react-native-typescript-transformer": "^1.2.3",
+    "react-test-renderer": "16.3.0-alpha.2",
+    "typescript": "^2.7.2"
   },
   "jest": {
-    "preset": "react-native"
+    "preset": "react-native",
+    "modulePaths": ["<rootDir>"],
+    "transform": {
+      "^.+\\.[jt]sx?$": "<rootDir>/jest/preprocessor.js"
+    },
+    "testMatch": [
+      "**/*.spec.{js,jsx,ts,tsx}",
+      "**/__tests__/*.{js,jsx,ts,tsx}"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ]
   }
 }
