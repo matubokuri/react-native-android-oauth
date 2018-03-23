@@ -4,9 +4,16 @@
   "private": true,
   "homepage": "https://sites.google.com/caldia.org/matsdev/study/rn/100-getting-started",
   "scripts": {
-    "start": "node node_modules/react-native/local-cli/cli.js start ./rn-cli.config.js",
+    "___start": "node node_modules/react-native/local-cli/cli.js start ./rn-cli.config.js",
+    "start": "node node_modules/react-native/local-cli/cli.js start --root artifacts",
     "test": "jest",
-    "screenshot": "adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png && adb shell rm /sdcard/screen.png"
+    "screenshot": "adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png && adb shell rm /sdcard/screen.png",
+    "tsc": "tsc",
+    "clean": "rimraf artifacts",
+    "watch": "npm run build -- -w",
+    "build": "npm run clean && npm run tsc --",
+    "build:android": "npm run build && react-native bundle --platform android --dev false --entry-file artifacts/index.android.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "start:android": "npm run build:android && concurrently -r 'npm run watch' 'react-native run-android'"
   },
   "repository": "github:matubokuri/react-native-android",
   "author": {
@@ -23,9 +30,11 @@
     "@types/react-native": "^0.52.19",
     "babel-jest": "23.0.0-alpha.0",
     "babel-preset-react-native": "4.0.0",
+    "concurrently": "^3.5.1",
     "jest": "22.4.2",
     "react-native-typescript-transformer": "^1.2.3",
     "react-test-renderer": "16.3.0-alpha.2",
+    "rimraf": "^2.6.2",
     "tslint": "^5.9.1",
     "tslint-config-standard": "^7.0.0",
     "typescript": "^2.7.2"

@@ -54,3 +54,6 @@ buck-out/
 
 # screenshot
 screen.png
+
+artifacts/
+dist/
