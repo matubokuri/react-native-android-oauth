@@ -59,3 +59,4 @@ artifacts/
 dist/
 android/app/src/main/assets/index.android.bundle
 android/app/src/main/assets/index.android.bundle.meta
+src/config.ts
