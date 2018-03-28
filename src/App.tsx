@@ -13,6 +13,7 @@ import {
   NavState
 } from 'react-native'
 import { config } from './config'
+import { OAuth } from './OAuth'
 
 type Props = {}
 type State = {
@@ -24,8 +25,17 @@ type State = {
 }
 export class App extends React.Component<Props, State> {
 
+  private oauth: OAuth
+
   constructor(props: Props) {
     super(props)
+    this.oauth = new OAuth(
+      'https://discordapp.com/api/oauth2/authorize',
+      'https://discordapp.com/api/oauth2/token',
+      'https://discordapp.com/api/oauth2/token/revoke',
+      config.client_id,
+      config.client_secret
+    )
     this.state = { authorize: false }
   }
 
@@ -40,7 +50,15 @@ export class App extends React.Component<Props, State> {
   renderAuthorize() {
     return (
       <WebView
-        source={{ uri: 'https://discordapp.com/api/oauth2/authorize?client_id=' + config.client_id + '&redirect_uri=http%3A%2F%2Flocalhost&response_type=code&scope=identify' }}
+        source={{
+          uri: this.oauth.generateAuthorizationURL(
+            {
+              response_type: 'code',
+              scope: 'identify',
+              state: 'AAAAAAAAAAAAAAA',
+              redirect_uri: 'http://localhost'
+            })
+        }}
         onNavigationStateChange={this.onNavigationStateChange}
       />
     )
@@ -132,24 +150,8 @@ export class App extends React.Component<Props, State> {
   private exchangeCode = () => {
     const code = this.state.code
     if (!code) return
-    const data =
-      'client_id' + '=' + encodeURIComponent(config.client_id) +
-      '&' + 'client_secret' + '=' + encodeURIComponent(config.client_secret) +
-      '&' + 'grant_type' + '=' + encodeURIComponent('authorization_code') +
-      '&' + 'code' + '=' + encodeURIComponent(code) +
-      '&' + 'redirect_uri' + '=' + encodeURIComponent('http://localhost')
-
-    const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-    }
-    console.log(data)
-    fetch('https://discordapp.com/api/oauth2/token',
-      {
-        method: 'POST',
-        headers: headers,
-        body: data
-      }
-    ).then((response: Response) => response.json())
+    this.oauth.exchange(code, 'http://localhost')
+      .then((response: Response) => response.json())
       .then((json: any) => {
         console.log(json)
         this.setState(
@@ -202,32 +204,22 @@ export class App extends React.Component<Props, State> {
     if (!accessToken) return
     const access_token = accessToken.access_token
     if (!access_token) return
-    const data =
-      'token' + '=' + encodeURIComponent(access_token)
-    const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-    }
-    fetch('https://discordapp.com/api/oauth2/token/revoke',
-      {
-        method: 'POST',
-        headers: headers,
-        body: data
-      }
-    ).then((response: Response) => {
-      console.log(response)
-      if (response && response.ok) {
-        this.setState(
-          {
-            code: undefined,
-            accessToken: undefined,
-            user: undefined,
-            authorize: false,
-            revoke: true
-          })
-      } else {
-        return response
-      }
-    })
+    this.oauth.revoke(access_token)
+      .then((response: Response) => {
+        console.log(response)
+        if (response && response.ok) {
+          this.setState(
+            {
+              code: undefined,
+              accessToken: undefined,
+              user: undefined,
+              authorize: false,
+              revoke: true
+            })
+        } else {
+          return response
+        }
+      })
       .catch((err: Error) => {
         console.error(err)
       })
